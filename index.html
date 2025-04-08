@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pokédex</title>
+  <link rel="stylesheet" href="pokedex.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f00;
+      font-family: sans-serif;
+    }
+
+    #pokemonGallery {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      text-align: center;
+      color: white;
+    }
+
+    .gallery-item {
+      font-size: 14px;
+      padding: 5px;
+      cursor: pointer;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .gallery-item:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    #stats {
+      color: #fff;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    #searchContainer {
+      margin-top: 10px;
+    }
+
+    #searchInput {
+      width: 100%;
+      padding: 6px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+    }
+
+    #notFound {
+      color: #fff;
+      margin-top: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="pokedex">
+    <div id="left">
+      <!-- layout clássico mantido -->
+      <div id="logo"></div>
+      <div id="bg_curve1_left"></div>
+      <div id="bg_curve2_left"></div>
+      <div id="curve1_left">
+        <div id="buttonGlass"><div id="reflect"></div></div>
+        <div id="miniButtonGlass1"></div>
+        <div id="miniButtonGlass2"></div>
+        <div id="miniButtonGlass3"></div>
+      </div>
+      <div id="curve2_left">
+        <div id="junction">
+          <div id="junction1"></div>
+          <div id="junction2"></div>
+        </div>
+      </div>
+      <div id="screen">
+        <div id="topPicture">
+          <div id="buttontopPicture1"></div>
+          <div id="buttontopPicture2"></div>
+        </div>
+        <div id="picture">
+          <img id="pokemonImage" height="170" />
+        </div>
+        <div id="buttonbottomPicture"></div>
+        <div id="speakers">
+          <div class="sp"></div>
+          <div class="sp"></div>
+          <div class="sp"></div>
+          <div class="sp"></div>
+        </div>
+      </div>
+      <div id="bigbluebutton"></div>
+      <div id="barbutton1"></div>
+      <div id="barbutton2"></div>
+      <div id="cross">
+        <div id="leftcross"><div id="leftT"></div></div>
+        <div id="topcross"><div id="upT"></div></div>
+        <div id="rightcross"><div id="rightT"></div></div>
+        <div id="midcross"><div id="midCircle"></div></div>
+        <div id="botcross"><div id="downT"></div></div>
+      </div>
+    </div>
+
+    <div id="right">
+      <div id="stats">
+        <strong>Name:</strong> <span id="pokemonName"></span><br />
+        <strong>Type:</strong> <span id="pokemonTypes"></span><br />
+        <strong>Height:</strong> <span id="pokemonHeight"></span> m<br />
+        <strong>Weight:</strong> <span id="pokemonWeight"></span> kg<br />
+        <strong>Skill:</strong> <span id="pokemonSkills"></span><br />
+        <strong>Next Evolution:</strong> <span id="pokemonEvolution">N/A</span>
+      </div>
+
+      <div id="searchContainer">
+        <input type="text" id="searchInput" placeholder="Search Pokémon by name...">
+        <div id="notFound">Pokémon not found.</div>
+      </div>
+
+      <div id="pokemonGallery"></div>
+    </div>
+  </div>
+
+  <script>
+    const pokemonList = [
+      "bulbasaur", "charmander", "squirtle", "pikachu", "meowth",
+      "psyduck", "machop", "gengar", "eevee", "dratini"
+    ];
+
+    const gallery = document.getElementById("pokemonGallery");
+    const image = document.getElementById("pokemonImage");
+    const nameSpan = document.getElementById("pokemonName");
+    const typeSpan = document.getElementById("pokemonTypes");
+    const heightSpan = document.getElementById("pokemonHeight");
+    const weightSpan = document.getElementById("pokemonWeight");
+    const skillSpan = document.getElementById("pokemonSkills");
+    const evolutionSpan = document.getElementById("pokemonEvolution");
+    const searchInput = document.getElementById("searchInput");
+    const notFound = document.getElementById("notFound");
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    async function fetchPokemonData(name) {
+      try {
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+
+        image.src = data.sprites.front_default;
+        image.alt = data.name;
+        nameSpan.textContent = capitalize(data.name);
+        typeSpan.textContent = data.types.map(t => capitalize(t.type.name)).join(" / ");
+        heightSpan.textContent = (data.height / 10).toFixed(1);
+        weightSpan.textContent = (data.weight / 10).toFixed(1);
+        skillSpan.textContent = data.abilities.map(a => capitalize(a.ability.name)).join(" / ");
+        evolutionSpan.textContent = "N/A";
+
+        notFound.style.display = "none";
+      } catch (err) {
+        notFound.style.display = "block";
+      }
+    }
+
+    function createGalleryItem(name) {
+      const div = document.createElement("div");
+      div.className = "gallery-item";
+
+      const label = document.createElement("span");
+      label.textContent = capitalize(name);
+
+      div.appendChild(label);
+
+      div.addEventListener("click", () => {
+        fetchPokemonData(name);
+      });
+
+      gallery.appendChild(div);
+    }
+
+    // Cria galeria padrão
+    pokemonList.forEach(name => createGalleryItem(name));
+
+    // Mostra o primeiro automaticamente
+    fetchPokemonData(pokemonList[0]);
+
+    // Busca por nome
+    searchInput.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        const searchName = searchInput.value.trim().toLowerCase();
+        if (searchName) {
+          fetchPokemonData(searchName);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
